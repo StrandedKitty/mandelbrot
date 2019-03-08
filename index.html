@@ -1,236 +1,236 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-<head>
-	<title>Mandelbrot Explorer</title>
-	<meta charset="utf-8" />
-	<style>
-		body {
-			margin: 0;
-			overflow: hidden;
-		}
-		canvas {
-			width: 100%;
-		}
-	</style>
-</head>
-<body>
-	<canvas id="canvas"></canvas>
-	<script id="2d-vertex-shader" type="x-shader/x-vertex">
-	attribute vec2 a_position;
-	attribute vec2 a_texCoord;
-
-	uniform vec2 u_resolution;
-
-	varying vec2 v_texCoord;
-
-	void main() {
-		 gl_Position = vec4(a_position, 0, 1);
-		 v_texCoord = a_texCoord;
-	}
-	</script>
-	<script id="2d-fragment-shader" type="x-shader/x-fragment">
-	precision highp float;
-	
-	uniform vec2 u_translate;
-	uniform float u_scale;
-	uniform vec2 u_resolution;
-	uniform int u_pattern;
-	
-	varying vec2 v_texCoord;
-
-	void main() {
-		const float MAX_ITERATIONS = 256.0;
-		mat4 colors;
-		vec2 pixel = 1.0/u_resolution;
-		float aspect = u_resolution.x/u_resolution.y;
-		
-		for(float n=0.0; n<4.0; n++) {
-			float iters;
-			
-			vec2 coord = v_texCoord;
-			if(n == 1.0) {
-				coord.x += pixel.x/2.0;
-			} else if(n == 2.0) {
-				coord.y += pixel.y/2.0;
-			} else if(n == 3.0) {
-				coord += pixel/2.0;
+<html>
+	<head>
+		<title>Mandelbrot Explorer</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
 			}
-		
-			vec2 z, c;
-			c.x = u_resolution.x/u_resolution.y*((coord.x - 0.5) * u_scale  - u_translate.x/aspect);
-			c.y = (coord.y - 0.5) * u_scale  - u_translate.y;
-			
-			z = c;
-			
-			for(float i=0.0; i<MAX_ITERATIONS; i++) {
-				iters = i;
-
-				float x = (z.x * z.x - z.y * z.y) + c.x; 
-				float y = (z.y * z.x + z.x * z.y) + c.y;
-
-				z.x = x;
-				z.y = y;
-
-				if((x * x + y * y) > 1e3) break;
+			canvas {
+				width: 100%;
 			}
-			
-			colors[int(n)] = vec4(sin(vec3(5.0,7.0,11.0)/80.0 * iters + vec3(1.0))*0.5+0.5, 1.0);
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+		<script id="2d-vertex-shader" type="x-shader/x-vertex">
+		attribute vec2 a_position;
+		attribute vec2 a_texCoord;
+
+		uniform vec2 u_resolution;
+
+		varying vec2 v_texCoord;
+
+		void main() {
+			 gl_Position = vec4(a_position, 0, 1);
+			 v_texCoord = a_texCoord;
 		}
-		gl_FragColor = (colors[0] + colors[1] + colors[2] + colors[3])/4.0;
-	}
-	</script>
-	<script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
-	<script>
-		var posX = 0.5;
-		var posY = 0;
-		var scale = 3;
-		var rscale = scale;
-		var drag = {
-			origin: {x: null, y: null},
-			active: false
-		};
-		
-		var canvas = document.getElementById("canvas");
-		
-		canvas.addEventListener("wheel", function(e){
-			if(e.deltaY < 0) scale *= 0.9;
-			if(e.deltaY > 0) scale *= 1.1;
-		});
-		
-		canvas.addEventListener("mousedown", function(e){
-			drag.active = true;
-			drag.origin.x = e.clientX/window.innerWidth;
-			drag.origin.y = e.clientY/window.innerHeight;
-		}, false);
-		
-		canvas.addEventListener("mousemove", function(e){
-			if(drag.active) {
-				posX += (e.clientX/window.innerWidth - drag.origin.x)*scale*canvas.width/canvas.height;
-				posY -= (e.clientY/window.innerHeight - drag.origin.y)*scale;
+		</script>
+		<script id="2d-fragment-shader" type="x-shader/x-fragment">
+		precision highp float;
+
+		uniform vec2 u_translate;
+		uniform float u_scale;
+		uniform vec2 u_resolution;
+		uniform int u_pattern;
+
+		varying vec2 v_texCoord;
+
+		void main() {
+			const float MAX_ITERATIONS = 256.0;
+			mat4 colors;
+			vec2 pixel = 1.0/u_resolution;
+			float aspect = u_resolution.x/u_resolution.y;
+
+			for(float n=0.0; n<4.0; n++) {
+				float iters;
+
+				vec2 coord = v_texCoord;
+				if(n == 1.0) {
+					coord.x += pixel.x/2.0;
+				} else if(n == 2.0) {
+					coord.y += pixel.y/2.0;
+				} else if(n == 3.0) {
+					coord += pixel/2.0;
+				}
+
+				vec2 z, c;
+				c.x = u_resolution.x/u_resolution.y*((coord.x - 0.5) * u_scale  - u_translate.x/aspect);
+				c.y = (coord.y - 0.5) * u_scale  - u_translate.y;
+
+				z = c;
+
+				for(float i=0.0; i<MAX_ITERATIONS; i++) {
+					iters = i;
+
+					float x = (z.x * z.x - z.y * z.y) + c.x; 
+					float y = (z.y * z.x + z.x * z.y) + c.y;
+
+					z.x = x;
+					z.y = y;
+
+					if((x * x + y * y) > 1e3) break;
+				}
+
+				colors[int(n)] = vec4(sin(vec3(5.0,7.0,11.0)/80.0 * iters + vec3(1.0))*0.5+0.5, 1.0);
+			}
+			gl_FragColor = (colors[0] + colors[1] + colors[2] + colors[3])/4.0;
+		}
+		</script>
+		<script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
+		<script>
+			var posX = 0.5;
+			var posY = 0;
+			var scale = 3;
+			var rscale = scale;
+			var drag = {
+				origin: {x: null, y: null},
+				active: false
+			};
+
+			var canvas = document.getElementById("canvas");
+
+			canvas.addEventListener("wheel", function(e){
+				if(e.deltaY < 0) scale *= 0.9;
+				if(e.deltaY > 0) scale *= 1.1;
+			});
+
+			canvas.addEventListener("mousedown", function(e){
+				drag.active = true;
 				drag.origin.x = e.clientX/window.innerWidth;
 				drag.origin.y = e.clientY/window.innerHeight;
-			}
-		}, false);
-		
-		canvas.addEventListener("mouseup", function(){
-			drag.active = false;
-		}, false);
-	
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
-	
-		function main() {
-			var gl = canvas.getContext("webgl");
-			if (!gl) {
-				return;
-			}
+			}, false);
 
-			var program = webglUtils.createProgramFromScripts(gl, ["2d-vertex-shader", "2d-fragment-shader"]);
+			canvas.addEventListener("mousemove", function(e){
+				if(drag.active) {
+					posX += (e.clientX/window.innerWidth - drag.origin.x)*scale*canvas.width/canvas.height;
+					posY -= (e.clientY/window.innerHeight - drag.origin.y)*scale;
+					drag.origin.x = e.clientX/window.innerWidth;
+					drag.origin.y = e.clientY/window.innerHeight;
+				}
+			}, false);
 
-			var positionLocation = gl.getAttribLocation(program, "a_position");
-			var texcoordLocation = gl.getAttribLocation(program, "a_texCoord");
+			canvas.addEventListener("mouseup", function(){
+				drag.active = false;
+			}, false);
 
-			var positionBuffer = gl.createBuffer();
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-			setRectangle(gl, -1, -1, 2, 2);
+			function main() {
+				var gl = canvas.getContext("webgl");
+				if (!gl) {
+					return;
+				}
 
-			var texcoordBuffer = gl.createBuffer();
-			gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-				0.0,	0.0,
-				1.0,	0.0,
-				0.0,	1.0,
-				0.0,	1.0,
-				1.0,	0.0,
-				1.0,	1.0,
-			]), gl.STATIC_DRAW);
+				var program = webglUtils.createProgramFromScripts(gl, ["2d-vertex-shader", "2d-fragment-shader"]);
 
-			var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-			var translateLocation = gl.getUniformLocation(program, "u_translate");
-			var scaleLocation = gl.getUniformLocation(program, "u_scale");
-			var patternLocation = gl.getUniformLocation(program, "u_pattern");
+				var positionLocation = gl.getAttribLocation(program, "a_position");
+				var texcoordLocation = gl.getAttribLocation(program, "a_texCoord");
 
-			webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+				var positionBuffer = gl.createBuffer();
 
-			gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+				gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+				setRectangle(gl, -1, -1, 2, 2);
 
-			gl.clearColor(0, 0, 0, 0);
-			gl.clear(gl.COLOR_BUFFER_BIT);
+				var texcoordBuffer = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+					0.0,	0.0,
+					1.0,	0.0,
+					0.0,	1.0,
+					0.0,	1.0,
+					1.0,	0.0,
+					1.0,	1.0,
+				]), gl.STATIC_DRAW);
 
-			gl.useProgram(program);
+				var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+				var translateLocation = gl.getUniformLocation(program, "u_translate");
+				var scaleLocation = gl.getUniformLocation(program, "u_scale");
+				var patternLocation = gl.getUniformLocation(program, "u_pattern");
 
-			gl.enableVertexAttribArray(positionLocation);
+				webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-			var size = 2;
-			var type = gl.FLOAT;
-			var normalize = false;
-			var stride = 0;
-			var offset = 0;
-			gl.vertexAttribPointer(
-				positionLocation, size, type, normalize, stride, offset);
-
-			gl.enableVertexAttribArray(texcoordLocation);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
-
-			var size = 2;
-			var type = gl.FLOAT;
-			var normalize = false;
-			var stride = 0;
-			var offset = 0;
-			gl.vertexAttribPointer(
-				texcoordLocation, size, type, normalize, stride, offset);
-
-			gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
-			gl.uniform2f(translateLocation, posX, posY);
-			gl.uniform1f(scaleLocation, scale);
-			gl.uniform1i(patternLocation, 3);
-
-			var primitiveType = gl.TRIANGLES;
-			var offset = 0;
-			var count = 6;
-			
-			window.addEventListener('resize', function(){
-				canvas.width = window.innerWidth;
-				canvas.height = window.innerHeight;
 				gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-			});
-			
-			draw();
-			function draw(){
-				requestAnimationFrame(draw);
-				
-				rscale += (scale - rscale)*0.5;
-				
+
+				gl.clearColor(0, 0, 0, 0);
+				gl.clear(gl.COLOR_BUFFER_BIT);
+
+				gl.useProgram(program);
+
+				gl.enableVertexAttribArray(positionLocation);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+				var size = 2;
+				var type = gl.FLOAT;
+				var normalize = false;
+				var stride = 0;
+				var offset = 0;
+				gl.vertexAttribPointer(
+					positionLocation, size, type, normalize, stride, offset);
+
+				gl.enableVertexAttribArray(texcoordLocation);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+
+				var size = 2;
+				var type = gl.FLOAT;
+				var normalize = false;
+				var stride = 0;
+				var offset = 0;
+				gl.vertexAttribPointer(
+					texcoordLocation, size, type, normalize, stride, offset);
+
 				gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
 				gl.uniform2f(translateLocation, posX, posY);
-				gl.uniform1f(scaleLocation, rscale);
-				
-				gl.drawArrays(primitiveType, offset, count);
-				
+				gl.uniform1f(scaleLocation, scale);
+				gl.uniform1i(patternLocation, 3);
+
+				var primitiveType = gl.TRIANGLES;
+				var offset = 0;
+				var count = 6;
+
+				window.addEventListener('resize', function(){
+					canvas.width = window.innerWidth;
+					canvas.height = window.innerHeight;
+					gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+				});
+
+				draw();
+				function draw(){
+					requestAnimationFrame(draw);
+
+					rscale += (scale - rscale)*0.5;
+
+					gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+					gl.uniform2f(translateLocation, posX, posY);
+					gl.uniform1f(scaleLocation, rscale);
+
+					gl.drawArrays(primitiveType, offset, count);
+
+				}
 			}
-		}
 
-		function setRectangle(gl, x, y, width, height) {
-			var x1 = x;
-			var x2 = x + width;
-			var y1 = y;
-			var y2 = y + height;
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-			 x1, y1,
-			 x2, y1,
-			 x1, y2,
-			 x1, y2,
-			 x2, y1,
-			 x2, y2,
-			]), gl.STATIC_DRAW);
-		}
+			function setRectangle(gl, x, y, width, height) {
+				var x1 = x;
+				var x2 = x + width;
+				var y1 = y;
+				var y2 = y + height;
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+				 x1, y1,
+				 x2, y1,
+				 x1, y2,
+				 x1, y2,
+				 x2, y1,
+				 x2, y2,
+				]), gl.STATIC_DRAW);
+			}
 
-		main();
-
-	</script>
-</body>
+			main();
+		</script>
+	</body>
 </html>
